@@ -12,8 +12,9 @@ import { RouterModule } from '@angular/router';
 export class HomeComponent {
   
   proyectos = [
-    { nombre: 'Calculadora RFC', descripcion: 'Generar RFC' },
-    { nombre: 'Punto de Venta', descripcion: 'Punto de Venta' },
-    { nombre: 'Consumidor API', descripcion: 'Consulta datos de APIs externas' }
+    { nombre: 'Calculadora RFC', descripcion: 'Generar RFC', ruta: '/calculadora-rfc' },
+    { nombre: 'Punto de Venta', descripcion: 'Punto de Venta', ruta: '/punto-venta' },
+    { nombre: 'Consumidor API', descripcion: 'Consulta datos de APIs externas', ruta: '/consumidor-api' }
   ];
+  
 }
