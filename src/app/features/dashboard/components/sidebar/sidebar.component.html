@@ -1,0 +1,21 @@
+<div class="sidebar">
+    <div class="sidebar-header">
+      <h2>DESARROLLO WEB</h2>
+    </div>
+  
+    <nav class="sidebar-nav">
+      <ul class="menu-list">
+        <li *ngFor="let opcion of opcionesMenu" class="menu-item">
+          <button 
+            class="menu-button"
+            (click)="navegarA(opcion.ruta)"
+            routerLinkActive="activo"
+            [routerLink]="opcion.ruta">
+            
+            <span class="menu-icono">{{opcion.icono}}</span>
+            <span class="menu-titulo">{{opcion.titulo}}</span>
+          </button>
+        </li>
+      </ul>
+    </nav>
+  </div>
