@@ -1,0 +1,282 @@
+<!-- src/app/components/carrito/carrito.component.html -->
+<div class="carrito-container">
+    <!-- HEADER -->
+    <p-card header="🛒 Carrito de Compras" [style]="{'margin-bottom': '1rem'}">
+      <ng-template pTemplate="header">
+        <div class="flex justify-content-between align-items-center">
+          <div class="flex align-items-center gap-2">
+            <h1 class="m-0">🛒 Carrito de Compras</h1>
+            <p-badge 
+              *ngIf="totalProductos$ | async as total" 
+              [value]="total.toString()" 
+              severity="info">
+            </p-badge>
+          </div>
+          
+          <div class="flex gap-2">
+            <p-button 
+              [label]="mostrarFormulario ? 'Cancelar' : 'Agregar Producto'"
+              [icon]="mostrarFormulario ? 'pi pi-times' : 'pi pi-plus'"
+              (click)="onToggleFormulario()"
+              [loading]="cargando"
+              [severity]="mostrarFormulario ? 'secondary' : 'primary'">
+            </p-button>
+            
+            <p-button 
+              label="Vaciar Carrito"
+              icon="pi pi-trash"
+              (click)="onLimpiarCarrito()"
+              *ngIf="!(carritoVacio$ | async)"
+              [disabled]="cargando"
+              severity="danger"
+              [outlined]="true">
+            </p-button>
+          </div>
+        </div>
+      </ng-template>
+  
+      <!-- MENSAJES -->
+      <div class="messages-container mb-3">
+        <p-message 
+          *ngIf="mensajeExito" 
+          severity="success" 
+          [text]="mensajeExito"
+          [closable]="true"
+          (onClose)="mensajeExito = null">
+        </p-message>
+        
+        <p-message 
+          *ngIf="error" 
+          severity="error" 
+          [text]="error"
+          [closable]="true"
+          (onClose)="error = null">
+        </p-message>
+      </div>
+  
+      <!-- FORMULARIO AGREGAR PRODUCTO -->
+      <p-card 
+        *ngIf="mostrarFormulario" 
+        header="Agregar Nuevo Producto"
+        [style]="{'margin-bottom': '1rem'}"
+        styleClass="p-card-outlined">
+        
+        <form [formGroup]="agregarProductoForm" (ngSubmit)="onAgregarProducto()">
+          <div class="grid">
+            <div class="col-12 md:col-4">
+              <label for="nombreProducto" class="block text-900 font-medium mb-2">
+                Nombre del Producto *
+              </label>
+              <p-inputText
+                id="nombreProducto"
+                formControlName="nombreProducto"
+                placeholder="Ej: Coca Cola 600ml"
+                class="w-full"
+                [class.ng-invalid]="nombreProducto?.invalid && nombreProducto?.touched">
+              </p-inputText>
+              <small 
+                class="p-error block mt-1" 
+                *ngIf="nombreProducto?.invalid && nombreProducto?.touched">
+                <span *ngIf="nombreProducto?.errors?.['required']">El nombre es requerido</span>
+                <span *ngIf="nombreProducto?.errors?.['minlength']">Mínimo 2 caracteres</span>
+                <span *ngIf="nombreProducto?.errors?.['maxlength']">Máximo 100 caracteres</span>
+              </small>
+            </div>
+  
+            <div class="col-12 md:col-3">
+              <label for="precioUnitario" class="block text-900 font-medium mb-2">
+                Precio Unitario *
+              </label>
+              <p-inputNumber
+                id="precioUnitario"
+                formControlName="precioUnitario"
+                mode="currency"
+                currency="MXN"
+                locale="es-MX"
+                [min]="0.01"
+                [max]="999999"
+                placeholder="0.00"
+                class="w-full"
+                [class.ng-invalid]="precioUnitario?.invalid && precioUnitario?.touched">
+              </p-inputNumber>
+              <small 
+                class="p-error block mt-1" 
+                *ngIf="precioUnitario?.invalid && precioUnitario?.touched">
+                <span *ngIf="precioUnitario?.errors?.['required']">El precio es requerido</span>
+                <span *ngIf="precioUnitario?.errors?.['min']">Precio mínimo: $0.01</span>
+              </small>
+            </div>
+  
+            <div class="col-12 md:col-3">
+              <label for="cantidad" class="block text-900 font-medium mb-2">
+                Cantidad *
+              </label>
+              <p-inputNumber
+                id="cantidad"
+                formControlName="cantidad"
+                [min]="1"
+                [max]="1000"
+                [showButtons]="true"
+                buttonLayout="horizontal"
+                incrementButtonIcon="pi pi-plus"
+                decrementButtonIcon="pi pi-minus"
+                class="w-full"
+                [class.ng-invalid]="cantidad?.invalid && cantidad?.touched">
+              </p-inputNumber>
+              <small 
+                class="p-error block mt-1" 
+                *ngIf="cantidad?.invalid && cantidad?.touched">
+                <span *ngIf="cantidad?.errors?.['required']">La cantidad es requerida</span>
+                <span *ngIf="cantidad?.errors?.['min']">Cantidad mínima: 1</span>
+              </small>
+            </div>
+  
+            <div class="col-12 md:col-2 flex align-items-end">
+              <p-button
+                type="submit"
+                label="Agregar"
+                icon="pi pi-check"
+                [loading]="cargando"
+                [disabled]="agregarProductoForm.invalid"
+                class="w-full">
+              </p-button>
+            </div>
+          </div>
+        </form>
+      </p-card>
+  
+      <!-- TABLA DE PRODUCTOS -->
+      <div *ngIf="productos$ | async as productos">
+        
+        <!-- CARRITO VACÍO -->
+        <div *ngIf="productos.length === 0" class="text-center p-4">
+          <i class="pi pi-shopping-cart text-6xl text-300 mb-3"></i>
+          <h3 class="text-500 mb-2">Tu carrito está vacío</h3>
+          <p class="text-600">Agrega productos para comenzar tu compra</p>
+        </div>
+  
+        <!-- LISTA DE PRODUCTOS -->
+        <p-table 
+          *ngIf="productos.length > 0"
+          [value]="productos" 
+          [rows]="10"
+          [paginator]="productos.length > 10"
+          [responsive]="true"
+          styleClass="p-datatable-striped"
+          [tableStyle]="{'min-width': '50rem'}">
+          
+          <ng-template pTemplate="header">
+            <tr>
+              <th style="width: 4rem">CNS</th>
+              <th>Producto</th>
+              <th style="width: 8rem">Precio Unit.</th>
+              <th style="width: 10rem">Cantidad</th>
+              <th style="width: 8rem">Total</th>
+              <th style="width: 8rem">Acciones</th>
+            </tr>
+          </ng-template>
+  
+          <ng-template pTemplate="body" let-producto>
+            <tr>
+              <td>
+                <p-badge [value]="producto.cns.toString()" severity="secondary"></p-badge>
+              </td>
+              <td>
+                <div class="flex align-items-center gap-2">
+                  <i class="pi pi-box text-primary"></i>
+                  <span class="font-medium">{{ producto.nombreProducto }}</span>
+                </div>
+              </td>
+              <td>
+                <span class="font-semibold">{{ formatCurrency(producto.precioUnitario) }}</span>
+              </td>
+              <td>
+                <div class="flex align-items-center gap-1">
+                  <p-button
+                    icon="pi pi-minus"
+                    [rounded]="true"
+                    [text]="true"
+                    size="small"
+                    severity="secondary"
+                    (click)="onDecrementarCantidad(producto.cns)"
+                    [disabled]="producto.cantidad <= 1">
+                  </p-button>
+                  
+                  <span class="mx-2 font-medium">{{ producto.cantidad }}</span>
+                  
+                  <p-button
+                    icon="pi pi-plus"
+                    [rounded]="true"
+                    [text]="true"
+                    size="small"
+                    severity="secondary"
+                    (click)="onIncrementarCantidad(producto.cns)">
+                  </p-button>
+                </div>
+              </td>
+              <td>
+                <span class="font-bold text-primary">{{ formatCurrency(producto.precioTotal) }}</span>
+              </td>
+              <td>
+                <p-button
+                  icon="pi pi-trash"
+                  [rounded]="true"
+                  [text]="true"
+                  size="small"
+                  severity="danger"
+                  (click)="onEliminarProducto(producto.cns, producto.nombreProducto)"
+                  pTooltip="Eliminar producto">
+                </p-button>
+              </td>
+            </tr>
+          </ng-template>
+  
+          <ng-template pTemplate="emptymessage">
+            <tr>
+              <td colspan="6" class="text-center p-4">
+                <i class="pi pi-info-circle mr-2"></i>
+                No hay productos en el carrito
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </div>
+  
+      <!-- TOTALES -->
+      <div *ngIf="totales$ | async as totales" class="mt-4">
+        <p-divider></p-divider>
+        
+        <div class="grid">
+          <div class="col-12 md:col-6 md:col-offset-6">
+            <p-card header="Resumen de Compra" styleClass="p-card-outlined">
+              <div class="flex justify-content-between align-items-center mb-2">
+                <span class="text-600">Subtotal:</span>
+                <span class="font-medium">{{ formatCurrency(totales.subtotal) }}</span>
+              </div>
+              
+              <div class="flex justify-content-between align-items-center mb-2">
+                <span class="text-600">IVA (16%):</span>
+                <span class="font-medium">{{ formatCurrency(totales.iva) }}</span>
+              </div>
+              
+              <p-divider></p-divider>
+              
+              <div class="flex justify-content-between align-items-center mb-3">
+                <span class="text-xl font-bold">Total:</span>
+                <span class="text-xl font-bold text-primary">{{ formatCurrency(totales.total) }}</span>
+              </div>
+              
+              <p-button
+                label="Proceder al Pago"
+                icon="pi pi-credit-card"
+                class="w-full"
+                size="large"
+                [disabled]="carritoVacio$ | async">
+              </p-button>
+            </p-card>
+          </div>
+        </div>
+      </div>
+  
+    </p-card>
+  </div>
