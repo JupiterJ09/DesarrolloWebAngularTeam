@@ -17,9 +17,7 @@ export class SidebarComponent {
     { id: 'home', titulo: 'Inicio', icono: '🏠', ruta: '/dashboard' },
     { id: 'rfc', titulo: 'Calculadora RFC', icono: '🧮', ruta: '/rfc' },
     { id: 'pos', titulo: 'Punto de Venta', icono: '🛒', ruta: '/pos' },
-    { id: 'api', titulo: 'Consumidor API', icono: '🌐', ruta: '/api' },
-    { id: 'calculadora', titulo: 'Calculadora', icono: '🔢', ruta: '/calculadora' },
-    { id: 'convertidor', titulo: 'Convertidor', icono: '📏', ruta: '/convertidor' }
+    { id: 'api', titulo: 'Consumidor API', icono: '🌐', ruta: '/api' }
   ];
 
   constructor(private router: Router) {}
