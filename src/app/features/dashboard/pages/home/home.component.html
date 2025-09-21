@@ -1,20 +1,21 @@
 <div class="home-container">
-    <div class="content">
-      <header class="page-header">
-        <h1>Desarrollo Web</h1>
-      </header>
-  
-      <main class="main-content">
-        <div class="proyectos-lista">
-          <h2>Proyectos Disponibles:</h2>
-          
-          <div class="proyecto-grid">
-            <div *ngFor="let proyecto of proyectos" class="proyecto-item">
-              <h3>{{proyecto.nombre}}</h3>
-              <p>{{proyecto.descripcion}}</p>
-            </div>
+  <div class="content">
+    <header class="page-header">
+      <h1>Desarrollo Web</h1>
+    </header>
+
+    <main class="main-content">
+      <div class="proyectos-lista">
+        <h2>Proyectos Disponibles:</h2>
+
+        <div class="proyecto-grid">
+          <div *ngFor="let proyecto of proyectos" class="proyecto-item" [routerLink]="[proyecto.ruta]">
+            <h3>{{ proyecto.nombre }}</h3>
+            <p>{{ proyecto.descripcion }}</p>
+            <button>Ir a {{ proyecto.nombre }}</button>
           </div>
         </div>
-      </main>
-    </div>
+      </div>
+    </main>
   </div>
+</div>
